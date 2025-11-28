@@ -29,13 +29,13 @@
 ## **Hệ Thống Permissions Chi Tiết**
 
 ### **User Permissions** 
-| Permission | Mô tả | Mặc định |
-|------------|-------|----------|
-| `leaderboard.use` | Mở gui bảng xếp hạng | Default |
-| `leaderboard.reload` | Reload toàn bộ cấu hình | Default |
+| Permission | Mô tả |
+|------------|-------|
+| `leaderboard.use` | Mở gui bảng xếp hạng |
+| `leaderboard.reload` | Reload toàn bộ cấu hình |
 | `leaderboard.help` | Sử dụng lệnh help | Default |
-| `leaderboard.version` | Xem phiên bản plugin | Default |
-| `leaderboard.*` | Toàn bộ quyền của plugin | Default |
+| `leaderboard.version` | Xem phiên bản plugin |
+| `leaderboard.*` | Toàn bộ quyền của plugin |
 
 ## ⚙️ Cấu Hình
 
