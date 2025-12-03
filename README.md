@@ -5,7 +5,7 @@
 **LeaderboardSystem** là plugin Minecraft được phát triển và sở hữu bởi **VinhThien** giúp tạo một hệ thống bảng xếp hạng tuyệt vời bằng gui dễ tiếp cận
 
 **Thông Tin Plugin:**
-- **Plugin version:**: 1.0
+- **Plugin version:**: 1.1
 - **Author:**: VinhThien
 - **Tương thích**: Spigot/Paper 
 
@@ -43,166 +43,206 @@
 ```yaml
 # Leaderboard System Configuration
 
-# GUI Settings
-gui:
-  title: "&6&lLeaderboards"
-  size: 54
-  click_sound:
-    enabled: true
-    sound: "UI_BUTTON_CLICK"
-    volume: 1.0
-    pitch: 1.0
-  filler_item:
-    enabled: true
-    material: "GRAY_STAINED_GLASS_PANE"
-    display_name: " "
-  border_item:
-    enabled: true
-    material: "BLACK_STAINED_GLASS_PANE"
-    display_name: " "
-  close_button:
-    enabled: true
-    material: "BARRIER"
-    display_name: "&c&lClose"
-    lore:
-      - "&7Click to close the menu."
-    slot: 49
+# --- General Settings ---
 
-# Settings for the specific leaderboard GUIs (the ones that show player heads)
-leaderboard_gui:
+# Plugin language: 'en' (English) or 'vi' (Vietnamese).
+# Loads messages from messages/messages_xx.yml.
+language: "en"
+
+# How often player stats are updated in the database (in ticks).
+# 20 ticks = 1 second, 1200 ticks = 1 minute.
+update_interval: 1200 # Default: 60 seconds
+
+# --- Sound Settings ---
+sound:
+  # Sound played when clicking GUI items.
   click_sound:
-    enabled: true
-    sound: "BLOCK_NOTE_BLOCK_HAT"
-    volume: 1.0
-    pitch: 1.2
-  # Format for the player heads in the top player view
-  top_player_format:
-    display_name: "&#55aaff&l{player_name}"
-    lore:
-      - "&bRank: &e#{rank}"
-      - "&b{format}: &e{value}"
-  # Items in the bottom row of the leaderboard GUI
-  items:
-    personal_stats:
-      enabled: true
-      material: "PLAYER_HEAD"
-      display_name: "&e&lYour Stats"
-      # {rank}, {value}, and {format} will be replaced with the player's data
-      lore:
-        - "&7Your Rank: &b{rank}"
-        - "&7{format}: &b{value}"
-      slot: 48
-    refresh_button:
-      enabled: true
-      material: "SUNFLOWER"
-      display_name: "&e&lRefresh"
-      lore:
-        - "&7Click to refresh the leaderboard."
-      slot: 49
-    search_button:
-      enabled: true
-      material: "OAK_SIGN"
-      display_name: "&e&lSearch Player"
-      lore:
-        - "&7Click to search for a player's rank."
-      slot: 50
-    previous_page_button:
-      enabled: true
-      material: "ARROW"
-      display_name: "&a&lPrevious Page"
-      lore:
-        - "&7Go to the previous page."
-      slot: 45
-    next_page_button:
-      enabled: true
-      material: "ARROW"
-      display_name: "&a&lNext Page"
-      lore:
-        - "&7Go to the next page."
-      slot: 53
+    enabled: true # Enable/disable this sound.
+    sound: "UI_BUTTON_CLICK" # Bukkit Sound enum name.
+    volume: 1.0 # 0.0 to 1.0
+    pitch: 1.0 # 0.0 to 2.0
+  # Sound played when search fails or is cancelled.
   search_feedback:
     no_player_sound:
       enabled: true
       sound: "ENTITY_VILLAGER_NO"
       volume: 1.0
       pitch: 1.0
-    no_player_actionbar: "&cPlayer not found!"
-    cancelled_actionbar: "&eSearch cancelled."
-  search_messages:
-    prompt_text: "&#aaffaaPlease enter the player's name to search, or type &#ff5555.quit &#aaffaa to cancel."
-    leaderboard_key_not_found_error: "&#ff5555Error: Leaderboard key not found."
-    player_not_found: "&#ff5555Could not find player '&#ffffff{player_name}&#ff5555' in the {leaderboard_key} leaderboard."
-    search_result_header: "&#ffff00--- Search Result ---"
-    search_result_player: "&#55ffffPlayer: &#ffffff{player_name}"
-    search_result_leaderboard: "&#55ffffLeaderboard: &#ffffff{leaderboard_key}"
-    search_result_rank: "&#55ffffRank: &#ffffff#{rank}"
-    search_result_score: "&#55ffffScore: &#ffffff{score}"
-    search_result_footer: "&#ffff00--------------------"
-    conversation_prefix: "&b[Leaderboard] &r"
-    search_command_usage: "&cUsage: /lb search <leaderboard> <player>"
-    invalid_leaderboard: "&cLeaderboard '{leaderboard_id}' not found."
+
+# --- Automatic Number Formatting (e.g., 1,234,567 -> 1.23M) ---
+automatic_format:
+  # Suffixes for large numbers.
+  number_formatter:
+    thousands: k
+    millions: M
+    billions: B
+    trillions: T
+    quadrillions: Q
+  # Leaderboards to apply automatic number formatting.
+  # 'key' must match a leaderboard ID. 'placeholder' is the PAPI placeholder to format.
+  format_list:
+    money:
+      placeholder: "%vault_eco_balance_fixed%" # PAPI placeholder for the raw number.
+      number_formatter: true # Enable/disable formatting for this leaderboard.
+
+# --- Main GUI Settings ---
+gui:
+  # Title of the main GUI. Supports color codes.
+  title: "&8ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅѕ"
+  # Size of the main GUI (must be a multiple of 9).
+  size: 45
+  # Border items for the GUI.
+  border_item:
+    enabled: true # Enable/disable border items.
+    material: "LIGHT_GRAY_STAINED_GLASS_PANE" # Bukkit Material name.
+    display_name: " " # Use " " for an empty name.
+    lore: [] # Lore lines for the border item.
+    # List of slots for border items. Can be single numbers (e.g., 0, 1) or ranges (e.g., 0-8).
+    # Example for a 45-slot GUI (5 rows):
+    # Top row: 0-8, Bottom row: 36-44, Sides: 9, 17, 18, 26, 27, 35
+    slots: "[0-8, 36-44, 9, 17, 18, 26, 27, 35]"
+  # Close button for the main GUI.
+  close_button:
+    enabled: true
+    material: "BARRIER"
+    display_name: "&#ff0000&lᴄʟᴏѕᴇ"
+    lore:
+      - "&fClick to close the menu"
+    slot: 40 # The slot where the close button will appear.
+
+# --- Specific Leaderboard GUI Settings ---
+leaderboard_gui:
+  # Format for player heads displayed in the leaderboard list.
+  # {player_name}, {rank}, {value}, {format} are replaced.
+  top_player_format:
+    display_name: "&#b3ff00{player_name}"
+    lore:
+        - "&f{format}: &7{value} &#b3ff00(#{rank})"
+  # Control items in the specific leaderboard GUI.
+  items:
+    # Player's own statistics button.
+    personal_stats:
+      enabled: true
+      material: "PLAYER_HEAD"
+      display_name: "&#b3ff00%player_name%" # %player_name% is a PlaceholderAPI placeholder.
+      lore:
+        - "&f{format}: &7{value} &#b3ff00(#{rank})"
+      slot: 48 # Slot for the button.
+    # Refresh button.
+    refresh_button:
+      enabled: true
+      material: "BELL"
+      display_name: "&#b3ff00ʀᴇꜰʀᴇѕʜ"
+      lore:
+        - "&fClick to refresh!"
+      slot: 49
+    # Search button (opens SignGUI).
+    search_button:
+      enabled: true
+      material: "OAK_SIGN"
+      display_name: "&#b3ff00ѕᴇᴀʀᴄʜ"
+      lore:
+        - "&fClick to search for players"
+      slot: 50
+      # SignGUI settings:
+      sign-type: "OAK_SIGN" # Material of the sign.
+      sign-input-line: 1 # Line number (1-4) for player input.
+      sign-gui: # Lines displayed on the sign.
+        - ""
+        - "↑↑↑↑↑↑↑↑↑↑↑↑"
+        - "Search"
+        - ""
+    # Previous page button.
+    previous_page_button:
+      enabled: true
+      material: "ARROW"
+      display_name: "&#b3ff00ᴘʀᴇᴠɪᴏᴜѕ"
+      lore:
+        - "&fClick to go to the previous page"
+      slot: 45
+    # Next page button.
+    next_page_button:
+      enabled: true
+      material: "ARROW"
+      display_name: "&#b3ff00ɴᴇхᴛ"
+      lore:
+        - "&fClick to go to the next page"
+      slot: 53
+  # Feedback sounds for search.
+  search_feedback:
+    no_player_sound:
+      enabled: true
+      sound: "ENTITY_VILLAGER_NO"
+      volume: 1.0
+      pitch: 1.0
 
 # --- Leaderboard Definitions ---
-# type: INTERNAL_KILLS, INTERNAL_DEATHS, INTERNAL_MOBS_KILLED, INTERNAL_BLOCKS_BROKEN, INTERNAL_BLOCKS_PLACED, PLACEHOLDER
+# Define each leaderboard. Each needs a unique key.
 leaderboards:
   kills:
-    type: INTERNAL_KILLS
-    format: "Kills"
-    material: DIAMOND_SWORD
-    display_name: "&4&lKills Leaderboard"
+    title: "&8ᴍᴏѕᴛ ᴋɪʟʟѕ (Page {page})" # GUI title for this leaderboard. {page} is replaced.
+    type: INTERNAL_KILLS # Statistic type: INTERNAL_*, PLACEHOLDER.
+    format: "Kills" # Short name for statistic, used in messages.
+    material: MACE # Icon material.
+    display_name: "&#b3ff00&lᴋɪʟʟѕ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ" # Display name in main GUI.
     lore:
-      - "&7Top player killers."
-    slot: 20
+      - "&fClick to view the kills leaderboard"
+    slot: 19 # Slot in main GUI.
   deaths:
+    title: "&8ᴍᴏѕᴛ ᴅᴇᴀᴛʜѕ (Page {page})"
     type: INTERNAL_DEATHS
     format: "Deaths"
-    material: BONE
-    display_name: "&c&lDeaths Leaderboard"
+    material: SKELETON_SKULL
+    display_name: "&#b3ff00&lᴅᴇᴀᴛʜѕ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ"
     lore:
-      - "&7Most frequent deaths."
+      - "&fClick to view the deaths leaderboard"
+    slot: 20
+  money:
+    title: "&8ᴍᴏѕᴛ ᴍᴏɴᴇʏ (Page {page})"
+    type: PLACEHOLDER
+    placeholder: "%vault_eco_balance_fixed%" # Required for PLACEHOLDER type.
+    format: "Money"
+    material: EMERALD
+    display_name: "&#b3ff00&lᴍᴏɴᴇʏ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ"
+    lore:
+      - "&fClick to view the money leaderboard"
     slot: 21
-  mobs_killed:
-    type: INTERNAL_MOBS_KILLED
-    format: "Mob Kills"
-    material: ZOMBIE_HEAD
-    display_name: "&5&lMobs Killed Leaderboard"
-    lore:
-      - "&7Top mob slayers."
-    slot: 22
   blocks_broken:
+    title: "&8ᴍᴏѕᴛ ʙʟᴏᴄᴋѕ ʙʀᴏᴋᴇɴ (Page {page})"
     type: INTERNAL_BLOCKS_BROKEN
     format: "Blocks Broken"
-    material: IRON_PICKAXE
-    display_name: "&3&lBlocks Broken Leaderboard"
+    material: COBBLESTONE
+    display_name: "&#b3ff00&lʙʟᴏᴄᴋѕ ʙʀᴏᴋᴇɴ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ"
     lore:
-      - "&7Most blocks destroyed."
-    slot: 23
+      - "&fClick to view the blocks broken leaderboard"
+    slot: 22
   blocks_placed:
+    title: "&8ᴍᴏѕᴛ ʙʟᴏᴄᴋѕ ᴘʟᴀᴄᴇᴅ (Page {page})"
     type: INTERNAL_BLOCKS_PLACED
     format: "Blocks Placed"
-    material: GRASS_BLOCK
-    display_name: "&2&lBlocks Placed Leaderboard"
+    material: STONE
+    display_name: "&#b3ff00&lʙʟᴏᴄᴋѕ ᴘʟᴀᴄᴇᴅ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ"
     lore:
-      - "&7Most blocks placed."
+      - "&fClick to view the blocks placed leaderboard"
+    slot: 23
+  mobs_killed:
+    title: "&8ᴍᴏѕᴛ ᴍᴏʙѕ ᴋɪʟʟᴇᴅ (Page {page})"
+    type: INTERNAL_MOBS_KILLED
+    format: "Mob killed"
+    material: ZOMBIE_HEAD
+    display_name: "&#b3ff00&lᴍᴏʙѕ ᴋɪʟʟᴇᴅ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ"
+    lore:
+      - "&fClick to view the mobs killed leaderboard"
     slot: 24
-  money:
-    type: PLACEHOLDER
-    placeholder: "%vault_eco_balance_fixed%"
-    format: "Money"
-    material: GOLD_INGOT
-    display_name: "&a&lMoney Leaderboard"
+  playtime:
+    title: "&8ᴍᴏѕᴛ ᴘʟᴀʏᴛɪᴍᴇ (Page {page})"
+    type: INTERNAL_PLAYTIME
+    format: "Playtime"
+    material: CLOCK
+    display_name: "&#b3ff00&lᴘʟᴀʏ ᴛɪᴍᴇ ʟᴇᴀᴅᴇʀʙᴏᴀʀᴅ"
     lore:
-      - "&7Richest players on the server."
-    slot: 30
-  jumps:
-    type: PLACEHOLDER
-    placeholder: "%statistic_jump%"
-    format: "Jumps"
-    material: RABBIT_FOOT
-    display_name: "&e&lJumps Leaderboard"
-    lore:
-      - "&7Players who jump the most."
-    slot: 32
+      - "&fClick to view the playtime leaderboard"
+    slot: 25
 
 ```
 
